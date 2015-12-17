@@ -91,8 +91,10 @@ public class RollingBalls {
 					queue[0] = i;
 					while (qi < qs) {
 						int p = queue[qi++];
-						if (move[p][0] == 0) {
-							for (int d : D) {
+						if (move[p][4] == 0) {
+							move[p][4] = 1;
+							for (int j = 0; j < 4; ++j) {
+								int d = D[j];
 								int n = p;
 								while (board[n + d] == NONE)
 									n += d;
@@ -102,13 +104,13 @@ public class RollingBalls {
 										queue[qs++] = n;
 										if (res[n] == -1 || goal[n] == board[i]) res[n] = i;
 									}
-									// move[p][++move[p][0]] = n;
+									move[p][j] = n;
 								}
 							}
 						} else {
-							for (int j = 1; j <= move[p][0]; ++j) {
+							for (int j = 0; j < 4; ++j) {
 								int n = move[p][j];
-								if (!used[n]) {
+								if (n != 0 && n + D[j] != i && !used[n]) {
 									used[n] = true;
 									queue[qs++] = n;
 									if (res[n] == -1 || goal[n] == board[i]) res[n] = i;
