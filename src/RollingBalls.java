@@ -79,33 +79,43 @@ public class RollingBalls {
 
 		int[] move() {
 			boolean used[] = new boolean[WH];
-			int queue[] = new int[WH], qi, qs;
-			int res[] = new int[WH];
+			int queue[] = new int[WH], qi, qs, res[] = new int[WH];
+			int move[][] = new int[WH][5];
 			Arrays.fill(res, -1);
 			for (int i = 0; i < WH; ++i) {
 				if (board[i] >= 0) {
 					Arrays.fill(used, false);
-					int ball = board[i];
-					board[i] = NONE;
 					res[i] = i;
 					qi = 0;
 					qs = 1;
 					queue[0] = i;
-					used[i] = true;
 					while (qi < qs) {
 						int p = queue[qi++];
-						for (int d : D) {
-							int n = p;
-							while (board[n + d] == NONE)
-								n += d;
-							if (!used[n]) {
-								used[n] = true;
-								queue[qs++] = n;
-								if (res[n] == -1 || goal[n] == ball) res[n] = i;
+						if (move[p][0] == 0) {
+							for (int d : D) {
+								int n = p;
+								while (board[n + d] == NONE)
+									n += d;
+								if (n != p) {
+									if (n + d != i && !used[n]) {
+										used[n] = true;
+										queue[qs++] = n;
+										if (res[n] == -1 || goal[n] == board[i]) res[n] = i;
+									}
+									// move[p][++move[p][0]] = n;
+								}
+							}
+						} else {
+							for (int j = 1; j <= move[p][0]; ++j) {
+								int n = move[p][j];
+								if (!used[n]) {
+									used[n] = true;
+									queue[qs++] = n;
+									if (res[n] == -1 || goal[n] == board[i]) res[n] = i;
+								}
 							}
 						}
 					}
-					board[i] = ball;
 				}
 			}
 			return res;
@@ -137,8 +147,6 @@ public class RollingBalls {
 			for (int[] x : s.moves) {
 				final int from = x[0], to = x[1];
 				final ArrayList<String> course = new ArrayList<>();
-				int ball = board[from];
-				board[from] = NONE;
 				int prev[] = new int[WH], queue[] = new int[WH], qi = 0, qs = 1;
 				Arrays.fill(prev, -1);
 				queue[0] = from;
@@ -148,7 +156,7 @@ public class RollingBalls {
 						int n = p;
 						while (board[n + d] == NONE)
 							n += d;
-						if (prev[n] == -1) {
+						if (n + d != from && prev[n] == -1) {
 							prev[n] = p;
 							queue[qs++] = n;
 						}
@@ -168,7 +176,6 @@ public class RollingBalls {
 				}
 				Collections.reverse(course);
 				res.add(course);
-				board[to] = ball;
 			}
 			s = s.parent;
 		}
