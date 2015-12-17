@@ -115,9 +115,7 @@ public class RollingBallsVis {
 				W = H = minSize * (int) seed;
 				C = (int) seed;
 			}
-			System.out.println("H = " + H);
-			System.out.println("W = " + W);
-			System.out.println("C = " + C);
+			System.out.println("seed = " + seed + ", H = " + H + ", W = " + W + ", C = " + C);
 
 			// generate the original maze (= target)
 			int wallsPercentage = r1.nextInt(maxWallsP - minWallsP + 1) + minWallsP;
@@ -235,7 +233,9 @@ public class RollingBallsVis {
 				if (debug) System.out.println(targetMazeStr[i]);
 			}
 
+			long start = System.currentTimeMillis();
 			String[] rolls = new RollingBalls().restorePattern(startMazeStr, targetMazeStr);
+			System.out.println((System.currentTimeMillis() - start) + "ms");
 
 			// check the return and score it
 			if (rolls == null) {
@@ -271,6 +271,7 @@ public class RollingBallsVis {
 				}
 				if (curMaze[R][C] == '.' || curMaze[R][C] == '#') {
 					addFatalError("Each roll of your return must start in a cell with a ball.");
+					addFatalError(String.format("R = %d, C = %d", R, C));
 					return 0;
 				}
 				if (D < 0 || D > 3) {
@@ -550,7 +551,7 @@ public class RollingBallsVis {
 		long seed = 1;
 		vis = true;
 		manual = false;
-		del = 100;
+		del = 50;
 		SZ = 13;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-seed")) seed = Long.parseLong(args[++i]);
@@ -563,7 +564,10 @@ public class RollingBallsVis {
 		}
 		if (seed == 1) SZ = 20;
 		if (manual) vis = true;
-		RollingBallsVis f = new RollingBallsVis(seed);
+		vis = false;
+		for (seed = 1; seed <= 100; ++seed) {
+			new RollingBallsVis(seed);
+		}
 	}
 
 	// -----------------------------------------
