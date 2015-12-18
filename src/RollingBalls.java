@@ -9,10 +9,9 @@ public class RollingBalls {
 
 	int D[];
 	int H, W, WH;
-	int balls[][], goal[];
+	int balls[], goal[];
 
 	public String[] restorePattern(String[] start, String[] target) {
-
 		{
 			H = start.length + 2;
 			W = start[0].length() + 2;
@@ -20,24 +19,19 @@ public class RollingBalls {
 			D = new int[] { -1, W, 1, -W };
 		}
 		{
-			balls = new int[WH][2];
+			balls = new int[WH];
 			int p = 0;
 			for (int i = 1; i + 1 < H; ++i) {
 				for (int j = 1; j + 1 < W; ++j) {
 					char c = target[i - 1].charAt(j - 1);
-					if ('0' <= c && c <= '9') {
-						balls[p][0] = i * W + j;
-						balls[p][1] = c - '0';
-						++p;
-					}
+					if ('0' <= c && c <= '9') balls[p++] = i * W + j;
 				}
 			}
 			balls = Arrays.copyOf(balls, p);
 			goal = parse(target);
 		}
-
-		State init = new State(start), best = init;
 		final int size = 0xfff;
+		State init = new State(start), best = init;
 		State queue[] = new State[size];
 		State next[] = new State[size];
 		int qs = 1, ns = 0;
@@ -69,11 +63,13 @@ public class RollingBalls {
 		State(String[] start) {
 			parent = null;
 			board = parse(start);
+			for (int i = 0; i < WH; ++i)
+				if (goal[i] >= 0 && board[i] == goal[i]) board[i] = WALL;
 			score = 0;
 		}
 
 		State(State s) {
-			parent = s;
+			this.parent = s;
 			this.score = s.score;
 			this.board = Arrays.copyOf(s.board, s.board.length);
 		}
@@ -95,8 +91,7 @@ public class RollingBalls {
 						if (!calced[p]) {
 							calced[p] = true;
 							for (int j = 0; j < 4; ++j) {
-								int d = D[j];
-								int n = p;
+								int d = D[j], n = p;
 								while (board[n + d] == NONE)
 									n += d;
 								if (n != p) {
@@ -125,12 +120,10 @@ public class RollingBalls {
 		}
 
 		State[] child() {
-			State next[] = new State[0xfff];
-			int ni = 0;
-			int move[] = move();
-			for (int pos[] : balls) {
-				int p = pos[0];
-				if (board[p] == NONE && move[p] != -1) {
+			State next[] = new State[balls.length];
+			int ni = 0, move[] = move();
+			for (int p : balls) {
+				if (board[p] == NONE && move[p] != -1 && goal[p] == board[move[p]]) {
 					State s = new State(this);
 					if (goal[p] >= 0) s.score += goal[p] == s.board[move[p]] ? 2 : 1;
 					s.board[p] = WALL;
