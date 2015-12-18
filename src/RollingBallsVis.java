@@ -13,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -36,6 +38,7 @@ class P {
 }
 
 public class RollingBallsVis {
+	static final int MAX_TIME = 10000;
 	static int maxSize = 60, minSize = 10;
 	static int maxWallsP = 30, minWallsP = 10;
 	static int maxBallsP = 20, minBallsP = 5;
@@ -115,7 +118,6 @@ public class RollingBallsVis {
 				W = H = minSize * (int) seed;
 				C = (int) seed;
 			}
-			System.out.println("seed = " + seed + ", H = " + H + ", W = " + W + ", C = " + C);
 
 			// generate the original maze (= target)
 			int wallsPercentage = r1.nextInt(maxWallsP - minWallsP + 1) + minWallsP;
@@ -177,9 +179,9 @@ public class RollingBallsVis {
 			for (int i = 0; i < H; ++i)
 				startMaze[i] = Arrays.copyOf(curMaze[i], W);
 
-			System.out.println("Number of balls = " + nBalls);
+			System.out.println("seed = " + seed + ", H = " + H + ", W = " + W + ", C = " + C + ", balls = " + nBalls);
 			maxRolls = nBalls * 20;
-			System.out.println("Max rolls allowed = " + maxRolls);
+			// System.out.println("Max rolls allowed = " + maxRolls);
 		} catch (Exception e) {
 			System.err.println("An exception occurred while generating test case.");
 			e.printStackTrace();
@@ -233,9 +235,7 @@ public class RollingBallsVis {
 				if (debug) System.out.println(targetMazeStr[i]);
 			}
 
-			long start = System.currentTimeMillis();
 			String[] rolls = new RollingBalls().restorePattern(startMazeStr, targetMazeStr);
-			System.out.println((System.currentTimeMillis() - start) + "ms");
 
 			// check the return and score it
 			if (rolls == null) {
@@ -546,6 +546,8 @@ public class RollingBallsVis {
 		}
 	}
 
+	public RollingBallsVis() {}
+
 	// -----------------------------------------
 	public static void main(String[] args) {
 		long seed = 1;
@@ -565,9 +567,38 @@ public class RollingBallsVis {
 		if (seed == 1) SZ = 20;
 		if (manual) vis = true;
 		vis = false;
-		for (seed = 1; seed <= 100; ++seed) {
-			new RollingBallsVis(seed);
+		new RollingBallsVis().test();
+	}
+
+	void test() {
+		class ParameterClass {
+			volatile double d;
+			volatile int c;
+			volatile int timeover;
 		}
+		vis = false;
+		debug = false;
+		final ParameterClass sum = new ParameterClass();
+		ExecutorService es = Executors.newFixedThreadPool(2);
+
+		for (int seed = 1, size = seed + 100; seed < size; seed++) {
+			final int Seed = seed;
+			es.submit(() -> {
+				try {
+					long time = System.currentTimeMillis();
+					double score = new RollingBallsVis().runTest(Seed);
+					time = System.currentTimeMillis() - time;
+					sum.d += score;
+					++sum.c;
+					if (time > MAX_TIME) ++sum.timeover;
+					System.out.println(
+							String.format("%3d   %.3f   %4d   %.1f   %.3f   %d", Seed, score, time, sum.d, sum.d / sum.c, sum.timeover));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+		}
+		es.shutdown();
 	}
 
 	// -----------------------------------------

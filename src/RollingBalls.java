@@ -13,14 +13,6 @@ public class RollingBalls {
 
 	public String[] restorePattern(String[] start, String[] target) {
 
-		if (false) {
-			for (String s : start)
-				System.out.println(s);
-			System.out.println();
-			for (String s : target)
-				System.out.println(s);
-			System.out.println();
-		}
 		{
 			H = start.length + 2;
 			W = start[0].length() + 2;
@@ -46,17 +38,26 @@ public class RollingBalls {
 
 		State init = new State(start), best = init;
 		final int size = 0xfff;
-		State queue[] = new State[size + 1];
-		int qi = 0, qs = 1;
+		State queue[] = new State[size];
+		State next[] = new State[size];
+		int qs = 1, ns = 0;
 		queue[0] = init;
-		while (qi != qs) {
-			State s = queue[qi];
-			qi = (qi + 1) & size;
-			for (State c : s.child()) {
-				queue[qs] = c;
-				qs = (qs + 1) & size;
-				if (best.score < c.score) best = c;
+		while (0 < qs) {
+			max: for (int i = 0; i < qs; ++i) {
+				State s = queue[i];
+				for (State c : s.child()) {
+					next[ns++] = c;
+					if (best.score < c.score) best = c;
+					if (ns == size) break max;
+				}
 			}
+
+			State tmp[] = next;
+			next = queue;
+			queue = tmp;
+
+			qs = ns;
+			ns = 0;
 		}
 		return toAnswer(best);
 	}
@@ -78,9 +79,9 @@ public class RollingBalls {
 		}
 
 		int[] move() {
-			boolean used[] = new boolean[WH];
+			boolean[] calced = new boolean[WH], used = new boolean[WH];
 			int queue[] = new int[WH], qi, qs, res[] = new int[WH];
-			int move[][] = new int[WH][5];
+			int move[][] = new int[WH][4];
 			Arrays.fill(res, -1);
 			for (int i = 0; i < WH; ++i) {
 				if (board[i] >= 0) {
@@ -91,8 +92,8 @@ public class RollingBalls {
 					queue[0] = i;
 					while (qi < qs) {
 						int p = queue[qi++];
-						if (move[p][4] == 0) {
-							move[p][4] = 1;
+						if (!calced[p]) {
+							calced[p] = true;
 							for (int j = 0; j < 4; ++j) {
 								int d = D[j];
 								int n = p;
