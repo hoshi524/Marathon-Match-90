@@ -307,7 +307,8 @@ public class RollingBallsVis {
 	volatile boolean firstClick = true;
 	volatile P first = new P();
 	volatile int manualRolls = 0;
-	final static int[] colors = { 0x4000FF, 0xFF00BF, 0x00BFFF, 0xFFD761, 0xFF4000, 0x40FF00, 0xB3002D, 0x009973, 0x999999, 0x404040 };
+	final static int[] colors = { 0x4000FF, 0xFF00BF, 0x00BFFF, 0xFFD761, 0xFF4000, 0x40FF00, 0xB3002D, 0x009973,
+			0x999999, 0x404040 };
 
 	// -----------------------------------------
 	void draw() {
@@ -316,7 +317,8 @@ public class RollingBallsVis {
 		v.repaint();
 		try {
 			Thread.sleep(del);
-		} catch (Exception e) {};
+		} catch (Exception e) {}
+		;
 	}
 
 	// -----------------------------------------
@@ -579,7 +581,7 @@ public class RollingBallsVis {
 		vis = false;
 		debug = false;
 		final ParameterClass sum = new ParameterClass();
-		ExecutorService es = Executors.newFixedThreadPool(2);
+		ExecutorService es = Executors.newFixedThreadPool(4);
 
 		for (int seed = 1, size = seed + 100; seed < size; seed++) {
 			final int Seed = seed;
@@ -591,8 +593,8 @@ public class RollingBallsVis {
 					sum.d += score;
 					++sum.c;
 					if (time > MAX_TIME) ++sum.timeover;
-					System.out.println(
-							String.format("%3d   %.3f   %4d   %.1f   %.3f   %d", Seed, score, time, sum.d, sum.d / sum.c, sum.timeover));
+					System.out.println(String.format("%3d   %.3f   %4d   %.1f   %.3f   %d", Seed, score, time, sum.d,
+							sum.d / sum.c, sum.timeover));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

@@ -75,7 +75,7 @@ public class RollingBalls {
 		}
 
 		int[] move() {
-			boolean[] calced = new boolean[WH], used = new boolean[WH];
+			boolean[] used = new boolean[WH];
 			int queue[] = new int[WH], qi, qs, res[] = new int[WH];
 			int move[][] = new int[WH][4];
 			Arrays.fill(res, -1);
@@ -88,29 +88,30 @@ public class RollingBalls {
 					queue[0] = i;
 					while (qi < qs) {
 						int p = queue[qi++];
-						if (!calced[p]) {
-							calced[p] = true;
-							for (int j = 0; j < 4; ++j) {
-								int d = D[j], n = p;
-								while (board[n + d] == NONE)
-									n += d;
-								if (n != p) {
-									if (n + d != i && !used[n]) {
-										used[n] = true;
-										queue[qs++] = n;
-										if (res[n] == -1 || goal[n] == board[i]) res[n] = i;
-									}
-									move[p][j] = n;
+						for (int j = 0; j < 4; ++j) {
+							int n = move[p][j];
+							if (n == 0) {
+								int j2 = (j + 2) & 3, d = D[j], rev = -1;
+								if (board[p] == NONE) {
+									if (board[p - d] != NONE) rev = p;
+								} else {
+									if (board[p + d] != NONE) rev = p + d;
 								}
-							}
-						} else {
-							for (int j = 0; j < 4; ++j) {
-								int n = move[p][j];
-								if (n != 0 && n + D[j] != i && !used[n]) {
+								n = p;
+								while (board[n + d] == NONE) {
+									n += d;
+									if (rev != -1) move[n][j2] = rev;
+								}
+								if (n != p && n + d != i && !used[n]) {
 									used[n] = true;
 									queue[qs++] = n;
-									if (res[n] == -1 || goal[n] == board[i]) res[n] = i;
+									if (res[n] == -1 && goal[n] == board[i]) res[n] = i;
 								}
+								move[p][j] = n;
+							} else if (n != p && n + D[j] != i && !used[n]) {
+								used[n] = true;
+								queue[qs++] = n;
+								if (res[n] == -1 && goal[n] == board[i]) res[n] = i;
 							}
 						}
 					}
