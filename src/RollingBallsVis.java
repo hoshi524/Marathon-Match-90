@@ -39,10 +39,10 @@ class P {
 
 public class RollingBallsVis {
 	static final int MAX_TIME = 10000;
-	static int maxSize = 60, minSize = 10;
-	static int maxWallsP = 30, minWallsP = 10;
-	static int maxBallsP = 20, minBallsP = 5;
-	static int maxRolls;
+	int maxSize = 60, minSize = 10;
+	int maxWallsP = 30, minWallsP = 10;
+	int maxBallsP = 20, minBallsP = 5;
+	int maxRolls;
 
 	final int[] dr = { 0, 1, 0, -1 };
 	final int[] dc = { -1, 0, 1, 0 };
@@ -53,7 +53,7 @@ public class RollingBallsVis {
 
 	int prevX1, prevY1;
 	int prevX2, prevY2;
-	static boolean startPaused = false;
+	boolean startPaused = false;
 
 	SecureRandom r1;
 
@@ -300,9 +300,9 @@ public class RollingBallsVis {
 	// ------------- visualization part ------------
 	JFrame jf;
 	Vis v;
-	static boolean vis, manual, debug;
-	static int del;
-	static int SZ;
+	boolean vis, manual, debug;
+	int del;
+	int SZ;
 	volatile boolean manualReady;
 	volatile boolean firstClick = true;
 	volatile P first = new P();
@@ -553,23 +553,24 @@ public class RollingBallsVis {
 	// -----------------------------------------
 	public static void main(String[] args) {
 		long seed = 1;
-		vis = true;
-		manual = false;
-		del = 50;
-		SZ = 13;
+		RollingBallsVis vis = new RollingBallsVis();
+		vis.vis = true;
+		vis.manual = false;
+		vis.del = 50;
+		vis.SZ = 13;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-seed")) seed = Long.parseLong(args[++i]);
-			if (args[i].equals("-delay")) del = Integer.parseInt(args[++i]);
-			if (args[i].equals("-novis")) vis = false;
-			if (args[i].equals("-manual")) manual = true;
-			if (args[i].equals("-size")) SZ = Integer.parseInt(args[++i]);
-			if (args[i].equals("-debug")) debug = true;
-			if (args[i].equals("-pause")) startPaused = true;
+			if (args[i].equals("-delay")) vis.del = Integer.parseInt(args[++i]);
+			if (args[i].equals("-novis")) vis.vis = false;
+			if (args[i].equals("-manual")) vis.manual = true;
+			if (args[i].equals("-size")) vis.SZ = Integer.parseInt(args[++i]);
+			if (args[i].equals("-debug")) vis.debug = true;
+			if (args[i].equals("-pause")) vis.startPaused = true;
 		}
-		if (seed == 1) SZ = 20;
-		if (manual) vis = true;
-		vis = false;
-		new RollingBallsVis().test();
+		if (seed == 1) vis.SZ = 20;
+		if (vis.manual) vis.vis = true;
+		vis.vis = false;
+		vis.test();
 	}
 
 	void test() {

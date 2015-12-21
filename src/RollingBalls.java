@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class RollingBalls {
 
@@ -32,24 +33,19 @@ public class RollingBalls {
 		}
 		final int size = 0xfff;
 		State init = new State(start), best = init;
-		State queue[] = new State[size];
-		State next[] = new State[size];
-		int qs = 1, ns = 0;
-		queue[0] = init;
+		State queue[][] = new State[2][size];
+		int qi = 0, qs = 1, ns = 0;
+		queue[0][0] = init;
 		while (0 < qs) {
+			best = queue[qi][0];
 			max: for (int i = 0; i < qs; ++i) {
-				State s = queue[i];
+				State s = queue[qi][i];
 				for (State c : s.child()) {
-					next[ns++] = c;
-					if (best.score < c.score) best = c;
+					queue[(qi + 1) & 1][ns++] = c;
 					if (ns == size) break max;
 				}
 			}
-
-			State tmp[] = next;
-			next = queue;
-			queue = tmp;
-
+			qi = (qi + 1) & 1;
 			qs = ns;
 			ns = 0;
 		}
@@ -58,19 +54,17 @@ public class RollingBalls {
 
 	class State {
 		State parent;
-		int score, board[], moves[][];
+		int board[], next[][];
 
 		State(String[] start) {
 			parent = null;
 			board = parse(start);
 			for (int i = 0; i < WH; ++i)
 				if (goal[i] >= 0 && board[i] == goal[i]) board[i] = WALL;
-			score = 0;
 		}
 
 		State(State s) {
 			this.parent = s;
-			this.score = s.score;
 			this.board = Arrays.copyOf(s.board, s.board.length);
 		}
 
@@ -126,10 +120,9 @@ public class RollingBalls {
 			for (int p : balls) {
 				if (board[p] == NONE && move[p] != -1 && goal[p] == board[move[p]]) {
 					State s = new State(this);
-					if (goal[p] >= 0) s.score += goal[p] == s.board[move[p]] ? 2 : 1;
 					s.board[p] = WALL;
 					s.board[move[p]] = NONE;
-					s.moves = new int[][] { { move[p], p } };
+					s.next = new int[][] { { move[p], p } };
 					next[ni++] = s;
 				}
 			}
@@ -141,7 +134,7 @@ public class RollingBalls {
 		ArrayList<ArrayList<String>> res = new ArrayList<>();
 		while (s.parent != null) {
 			final int board[] = Arrays.copyOf(s.parent.board, WH);
-			for (int[] x : s.moves) {
+			for (int[] x : s.next) {
 				final int from = x[0], to = x[1];
 				final ArrayList<String> course = new ArrayList<>();
 				int prev[] = new int[WH], queue[] = new int[WH], qi = 0, qs = 1;
@@ -177,7 +170,7 @@ public class RollingBalls {
 			s = s.parent;
 		}
 		Collections.reverse(res);
-		ArrayList<String> tmp = new ArrayList<>();
+		List<String> tmp = new ArrayList<>();
 		for (ArrayList<String> list : res)
 			tmp.addAll(list);
 		return tmp.toArray(new String[tmp.size()]);
